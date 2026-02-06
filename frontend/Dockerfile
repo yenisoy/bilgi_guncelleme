@@ -3,8 +3,8 @@ FROM nginx:alpine
 # Install wget for health checks
 RUN apk add --no-cache wget
 
-# Cache bust - forces rebuild
-ARG CACHEBUST=1
+# Cache bust - forces rebuild (updated: 2026-02-06-1832)
+ARG CACHEBUST=2
 
 # Copy static files
 COPY . /usr/share/nginx/html
