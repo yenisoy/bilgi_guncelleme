@@ -3,6 +3,9 @@ FROM nginx:alpine
 # Install wget for health checks
 RUN apk add --no-cache wget
 
+# Cache bust - forces rebuild
+ARG CACHEBUST=1
+
 # Copy static files
 COPY . /usr/share/nginx/html
 
