@@ -1,0 +1,11 @@
+[build]
+nixpacksPlan = false
+
+[start]
+cmd = "echo 'This is a Docker Compose project. Use docker-compose.yml for deployment.'"
+
+[phases.setup]
+nixpkgs = []
+
+[phases.build]
+skip = true

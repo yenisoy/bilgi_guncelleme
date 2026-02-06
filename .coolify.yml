@@ -1,0 +1,38 @@
+services:
+  - name: adres-mongo
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: adres-dogrulama
+    internal: true
+
+  - name: adres-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - adres-mongo
+    environment:
+      PORT: 3001
+      MONGODB_URI: mongodb://adres-mongo:27017/adres-dogrulama
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    internal: true
+
+  - name: adres-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - adres-backend
+    ports:
+      - 80:80
+    environment:
+      API_URL: http://adres-backend:3001
+    public: true
+
+volumes:
+  - mongo_data
