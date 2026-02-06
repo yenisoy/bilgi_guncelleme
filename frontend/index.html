@@ -170,8 +170,10 @@
 
     <!-- Configuration - API URL'sini buradan değiştirin -->
     <script>
-        // ⚠️ ÖNEMLİ: Bu URL'i kendi backend sunucunuzun adresine değiştirin
-        window.API_BASE_URL = `http://${window.location.hostname}:3001/api`;
+        // API URL - Production'da backend HTTPS domain, local'de HTTP
+        window.API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? `http://${window.location.hostname}:3001/api`
+            : 'https://backendbg.ozpinar.live/api';
     </script>
     <script src="js/app.js"></script>
 </body>
