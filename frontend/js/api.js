@@ -1,6 +1,8 @@
 // API Configuration
-// API Configuration
-const API_BASE_URL = `http://${window.location.hostname}:3001/api`;
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const API_BASE_URL = isProduction
+    ? 'https://backendbg.ozpinar.live/api'
+    : `http://${window.location.hostname}:3001/api`;
 
 // Toast notification
 function showToast(message, type = 'success') {
