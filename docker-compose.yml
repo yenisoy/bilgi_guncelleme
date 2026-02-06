@@ -48,8 +48,7 @@ services:
       timeout: 10s
       retries: 10
       start_period: 90s
-    ports:
-      - "3001:3001"
+
     labels:
       - "coolify.managed=true"
 
@@ -78,8 +77,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    ports:
-      - "80:80"
+
     labels:
       - "coolify.managed=true"
 
