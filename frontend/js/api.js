@@ -1,8 +1,5 @@
-// API Configuration
-const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-const API_BASE_URL = isProduction
-    ? 'https://backendbg.ozpinar.live/api'
-    : `http://${window.location.hostname}:3001/api`;
+// API Configuration - Use relative path so nginx can proxy to backend
+const API_BASE_URL = '/api';
 
 // Toast notification
 function showToast(message, type = 'success') {
