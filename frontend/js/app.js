@@ -1,5 +1,5 @@
 // =============================================
-// Bilgi Doğrulama - Public Form JavaScript
+// Bilgi Doğrulama 2 - Public Form JavaScript
 // =============================================
 
 const API_BASE_URL = window.API_BASE_URL || `http://${window.location.hostname}:3001/api`;
