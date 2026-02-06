@@ -1,0 +1,89 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: adres-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=adres-dogrulama
+    networks:
+      - adres-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/adres-dogrulama --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    container_name: adres-backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - PORT=3001
+      - MONGODB_URI=mongodb://mongo:27017/adres-dogrulama
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@test.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    networks:
+      - adres-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3001/api/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "coolify.managed=true"
+
+  frontend:
+    build: ./frontend
+    container_name: adres-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    environment:
+      - API_URL=${API_URL:-http://backend:3001}
+    networks:
+      - adres-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80/ || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "coolify.managed=true"
+
+volumes:
+  mongo_data:
+
+networks:
+  adres-network:
+    driver: bridge

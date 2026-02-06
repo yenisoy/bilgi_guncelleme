@@ -1,0 +1,258 @@
+{
+    "provinces": [
+        {
+            "id": "34",
+            "name": "İstanbul",
+            "districts": [
+                {
+                    "id": "34-1",
+                    "name": "Kadıköy",
+                    "neighborhoods": [
+                        {
+                            "id": "34-1-1",
+                            "name": "Caferağa Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-1-1-1",
+                                    "name": "Moda Caddesi"
+                                },
+                                {
+                                    "id": "34-1-1-2",
+                                    "name": "Bahariye Caddesi"
+                                },
+                                {
+                                    "id": "34-1-1-3",
+                                    "name": "Caferağa Sokak"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "34-1-2",
+                            "name": "Fenerbahçe Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-1-2-1",
+                                    "name": "Bağdat Caddesi"
+                                },
+                                {
+                                    "id": "34-1-2-2",
+                                    "name": "Münir Nurettin Selçuk Caddesi"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "34-1-3",
+                            "name": "Göztepe Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-1-3-1",
+                                    "name": "Bağdat Caddesi"
+                                },
+                                {
+                                    "id": "34-1-3-2",
+                                    "name": "Göztepe Parkı Sokak"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "34-2",
+                    "name": "Beşiktaş",
+                    "neighborhoods": [
+                        {
+                            "id": "34-2-1",
+                            "name": "Bebek Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-2-1-1",
+                                    "name": "Bebek Caddesi"
+                                },
+                                {
+                                    "id": "34-2-1-2",
+                                    "name": "Cevdet Paşa Caddesi"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "34-2-2",
+                            "name": "Etiler Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-2-2-1",
+                                    "name": "Nispetiye Caddesi"
+                                },
+                                {
+                                    "id": "34-2-2-2",
+                                    "name": "Etiler Sokak"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "34-3",
+                    "name": "Üsküdar",
+                    "neighborhoods": [
+                        {
+                            "id": "34-3-1",
+                            "name": "Çengelköy Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "34-3-1-1",
+                                    "name": "Çengelköy Caddesi"
+                                },
+                                {
+                                    "id": "34-3-1-2",
+                                    "name": "Kuleli Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "06",
+            "name": "Ankara",
+            "districts": [
+                {
+                    "id": "06-1",
+                    "name": "Çankaya",
+                    "neighborhoods": [
+                        {
+                            "id": "06-1-1",
+                            "name": "Kızılay Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "06-1-1-1",
+                                    "name": "Atatürk Bulvarı"
+                                },
+                                {
+                                    "id": "06-1-1-2",
+                                    "name": "Tunalı Hilmi Caddesi"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "06-1-2",
+                            "name": "Bahçelievler Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "06-1-2-1",
+                                    "name": "7. Cadde"
+                                },
+                                {
+                                    "id": "06-1-2-2",
+                                    "name": "Bahçelievler Sokak"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "06-2",
+                    "name": "Keçiören",
+                    "neighborhoods": [
+                        {
+                            "id": "06-2-1",
+                            "name": "Etlik Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "06-2-1-1",
+                                    "name": "Etlik Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "35",
+            "name": "İzmir",
+            "districts": [
+                {
+                    "id": "35-1",
+                    "name": "Konak",
+                    "neighborhoods": [
+                        {
+                            "id": "35-1-1",
+                            "name": "Alsancak Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "35-1-1-1",
+                                    "name": "Kordon Boyu"
+                                },
+                                {
+                                    "id": "35-1-1-2",
+                                    "name": "Kıbrıs Şehitleri Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "35-2",
+                    "name": "Karşıyaka",
+                    "neighborhoods": [
+                        {
+                            "id": "35-2-1",
+                            "name": "Bostanlı Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "35-2-1-1",
+                                    "name": "Cemal Gürsel Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "16",
+            "name": "Bursa",
+            "districts": [
+                {
+                    "id": "16-1",
+                    "name": "Nilüfer",
+                    "neighborhoods": [
+                        {
+                            "id": "16-1-1",
+                            "name": "Görükle Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "16-1-1-1",
+                                    "name": "Görükle Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "07",
+            "name": "Antalya",
+            "districts": [
+                {
+                    "id": "07-1",
+                    "name": "Muratpaşa",
+                    "neighborhoods": [
+                        {
+                            "id": "07-1-1",
+                            "name": "Lara Mahallesi",
+                            "streets": [
+                                {
+                                    "id": "07-1-1-1",
+                                    "name": "Lara Caddesi"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
