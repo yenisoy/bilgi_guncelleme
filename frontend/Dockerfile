@@ -3,8 +3,9 @@ FROM nginx:alpine
 # Install wget for health checks
 RUN apk add --no-cache wget
 
-# Cache bust - forces rebuild (updated: 2026-02-06-1832)
-ARG CACHEBUST=2
+# Cache bust - forces rebuild (updated: 2026-02-06-1835)
+ARG CACHEBUST=3
+RUN echo "Build timestamp: $(date)" > /tmp/build_timestamp
 
 # Copy static files
 COPY . /usr/share/nginx/html
