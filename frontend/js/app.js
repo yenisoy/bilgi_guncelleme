@@ -518,6 +518,13 @@ function showSuccessState(message) {
             }
             btn.href = url;
             container.style.display = 'block';
+
+            // Track button click
+            btn.addEventListener('click', () => {
+                if (refCode) {
+                    fetch(`${API_BASE_URL}/public/track-click/${refCode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+                }
+            });
         }
     }
 }

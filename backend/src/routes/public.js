@@ -4,7 +4,27 @@ const { generateUniqueCode } = require('../utils/codeGenerator');
 
 const router = express.Router();
 
-// Get person by unique code (public access)
+// Track button click (must be before /:uniqueCode to avoid matching)
+router.post('/track-click/:uniqueCode', async (req, res) => {
+    try {
+        const { uniqueCode } = req.params;
+        const person = await Person.findOne({ uniqueCode: uniqueCode.toUpperCase() });
+
+        if (!person) {
+            return res.status(404).json({ error: 'Kişi bulunamadı' });
+        }
+
+        person.buttonClicks.push(new Date());
+        await person.save();
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Track click error:', error);
+        res.status(500).json({ error: 'Takip kaydı sırasında hata oluştu' });
+    }
+});
+
+// Get person by unique code (public access) + track visit
 router.get('/:uniqueCode', async (req, res) => {
     try {
         const { uniqueCode } = req.params;
@@ -18,6 +38,10 @@ router.get('/:uniqueCode', async (req, res) => {
                 data: null
             });
         }
+
+        // Track link visit
+        person.linkVisits.push(new Date());
+        await person.save();
 
         // Check for pending changes
         const pendingChange = await AddressChange.findOne({
@@ -71,6 +95,10 @@ router.post('/submit', async (req, res) => {
             : null;
 
         if (existingPerson) {
+            // Track form submission
+            existingPerson.formSubmissions.push(new Date());
+            await existingPerson.save();
+
             // Check for existing pending request
             const existingPending = await AddressChange.findOne({
                 uniqueCode: existingPerson.uniqueCode,

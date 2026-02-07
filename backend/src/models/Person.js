@@ -57,6 +57,19 @@ const personSchema = new mongoose.Schema({
     fullAddress: {
         type: String,
         trim: true
+    },
+    // Tracking fields - arrays to store full history
+    linkVisits: {
+        type: [Date],
+        default: []
+    },
+    formSubmissions: {
+        type: [Date],
+        default: []
+    },
+    buttonClicks: {
+        type: [Date],
+        default: []
     }
 }, {
     timestamps: true

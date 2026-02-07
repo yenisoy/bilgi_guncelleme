@@ -65,8 +65,10 @@ router.get('/export/excel', async (req, res) => {
         const persons = await Person.find().sort({ createdAt: -1 });
 
         const data = [
-            ['Kod', 'İsim', 'Soyisim', 'Telefon', 'Email', 'İl', 'İlçe', 'Mahalle', 'Sokak', 'Bina No', 'Daire No', 'Posta Kodu', 'Tam Adres', 'Link']
+            ['Kod', 'İsim', 'Soyisim', 'Telefon', 'Email', 'İl', 'İlçe', 'Mahalle', 'Sokak', 'Bina No', 'Daire No', 'Posta Kodu', 'Tam Adres', 'Link', 'Link Ziyaret Sayısı', 'Link Ziyaret Tarihleri', 'Form Gönderim Sayısı', 'Form Gönderim Tarihleri', 'Buton Tıklama Sayısı', 'Buton Tıklama Tarihleri']
         ];
+
+        const formatDates = (arr) => arr && arr.length > 0 ? arr.map(d => new Date(d).toLocaleString('tr-TR')).join(' | ') : '-';
 
         for (const p of persons) {
             let link = `${baseUrl}/?r=${p.uniqueCode}`;
@@ -88,7 +90,13 @@ router.get('/export/excel', async (req, res) => {
                 p.apartmentNo || '',
                 p.postalCode || '',
                 p.fullAddress || '',
-                link
+                link,
+                (p.linkVisits || []).length,
+                formatDates(p.linkVisits),
+                (p.formSubmissions || []).length,
+                formatDates(p.formSubmissions),
+                (p.buttonClicks || []).length,
+                formatDates(p.buttonClicks)
             ]);
         }
 

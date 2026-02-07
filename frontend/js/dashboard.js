@@ -109,9 +109,23 @@ async function loadPersons() {
     }
 }
 
+function formatTrackingTooltip(dates, label) {
+    if (!dates || dates.length === 0) return '';
+    return dates.map((d, i) => `${i + 1}. ${label}: ${new Date(d).toLocaleString('tr-TR')}`).join('\n');
+}
+
 function renderPersonsTable(persons) {
     const tbody = document.getElementById('persons-table');
-    tbody.innerHTML = persons.map(person => `
+    tbody.innerHTML = persons.map(person => {
+        const visits = person.linkVisits || [];
+        const submissions = person.formSubmissions || [];
+        const clicks = person.buttonClicks || [];
+
+        const visited = visits.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(visits, 'Ziyaret')}">👁 ${visits.length}</span>` : '<span class="badge bg-secondary" title="Henüz ziyaret edilmedi">👁 0</span>';
+        const submitted = submissions.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(submissions, 'Gönderim')}">📝 ${submissions.length}</span>` : '<span class="badge bg-secondary" title="Form gönderilmedi">📝 0</span>';
+        const clicked = clicks.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(clicks, 'Tıklama')}">🖱 ${clicks.length}</span>` : '<span class="badge bg-secondary" title="Butona tıklanmadı">🖱 0</span>';
+
+        return `
         <tr>
             <td>
                 <span class="code-badge" onclick="copyLink('${person.uniqueCode}', this)" title="Linki kopyala" style="cursor: pointer;">
@@ -125,13 +139,16 @@ function renderPersonsTable(persons) {
             <td>${person.email || '-'}</td>
             <td>${person.province ? `${person.province}/${person.district || ''}` : '-'}</td>
             <td>
+                <div class="d-flex gap-1">${visited} ${submitted} ${clicked}</div>
+            </td>
+            <td>
                 <div class="d-flex gap-2">
                     <button onclick="openModal('edit', '${person._id}')" class="btn-action-edit">Düzenle</button>
                     <button onclick="deletePerson('${person._id}', '${person.firstName} ${person.lastName}')" class="btn-action-delete">Sil</button>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function updatePagination(pagination) {
