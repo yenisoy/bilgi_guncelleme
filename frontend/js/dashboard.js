@@ -128,9 +128,14 @@ function renderPersonsTable(persons) {
         return `
         <tr>
             <td>
-                <span class="code-badge" onclick="copyLink('${person.uniqueCode}', this)" title="Linki kopyala" style="cursor: pointer;">
-                    ${person.uniqueCode}
-                </span>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="code-badge" onclick="copyLink('${person.uniqueCode}', this)" title="Linki kopyala" style="cursor: pointer;">
+                        ${person.uniqueCode}
+                    </span>
+                    <a href="javascript:void(0)" onclick="openPublicLink('${person.uniqueCode}')" title="Yeni sekmede aç" class="open-link-btn">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
             </td>
             <td>
                 <div class="fw-bold text-dark">${person.firstName} ${person.lastName}</div>
@@ -202,6 +207,16 @@ function copyLink(code, element) {
     } else {
         fallbackCopy(link, showSuccess);
     }
+}
+
+function openPublicLink(code) {
+    let link = `${window.location.origin}/?r=${code}`;
+    const btnName = document.getElementById('btn-name-input').value.trim();
+    const btnLink = document.getElementById('btn-link-input').value.trim();
+    if (btnName && btnLink) {
+        link += `&btnName=${encodeURIComponent(btnName)}&btnLink=${encodeURIComponent(btnLink)}`;
+    }
+    window.open(link, '_blank');
 }
 
 function fallbackCopy(text, onSuccess) {
