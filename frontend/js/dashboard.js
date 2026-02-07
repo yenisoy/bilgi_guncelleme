@@ -388,11 +388,10 @@ function resetAddressSelects() {
     document.getElementById('province').innerHTML = '<option value="">İl Seçin</option>';
     document.getElementById('district').innerHTML = '<option value="">İlçe Seçin</option>';
     document.getElementById('neighborhood').innerHTML = '<option value="">Mahalle Seçin</option>';
-    document.getElementById('street').innerHTML = '<option value="">Sokak Seçin</option>';
+    document.getElementById('street').value = '';
 
     document.getElementById('district').disabled = true;
     document.getElementById('neighborhood').disabled = true;
-    document.getElementById('street').disabled = true;
 
     // Re-load provinces
     loadProvinces();
@@ -626,15 +625,21 @@ async function onNeighborhoodChange(e) {
 
     try {
         streets = await API.address.getStreets(selectedProvince.id, selectedDistrict.id, selectedNeighborhood.id);
-        const select = document.getElementById('street');
-        select.innerHTML = '<option value="">Sokak Seçin</option>';
+        const input = document.getElementById('street');
+        // Datalist ile öneri sun ama serbest yazıya da izin ver
+        let datalist = document.getElementById('street-list');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'street-list';
+            input.parentNode.appendChild(datalist);
+            input.setAttribute('list', 'street-list');
+        }
+        datalist.innerHTML = '';
         streets.forEach(s => {
             const option = document.createElement('option');
             option.value = s.name;
-            option.textContent = s.name;
-            select.appendChild(option);
+            datalist.appendChild(option);
         });
-        select.disabled = false;
     } catch (error) {
         console.error('Error:', error);
     }
