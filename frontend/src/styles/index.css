@@ -585,6 +585,80 @@ textarea {
     margin-bottom: 1rem;
 }
 
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0;
+}
+
+.tab {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: var(--color-primary);
+}
+
+.tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+/* Alert */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+}
+
+.alert-warning {
+    background: var(--color-warning-light);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.alert-success {
+    background: var(--color-success-light);
+    color: #047857;
+    border: 1px solid #6ee7b7;
+}
+
+.alert-danger {
+    background: var(--color-danger-light);
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
+.alert p {
+    margin: 0 0 0.5rem 0;
+}
+
+.alert p:last-child {
+    margin-bottom: 0;
+}
+
+/* Code Badge */
+.code-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: monospace;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     body {
