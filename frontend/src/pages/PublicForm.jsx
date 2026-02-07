@@ -338,7 +338,7 @@ export default function PublicForm() {
     return (
         <div className="public-container">
             <div className="public-header">
-                <h1 className="public-title">📍 Bilgi Doğrulama</h1>
+                <h1 className="public-title">📍 Bilgi Doğrulama (v2)</h1>
                 <p className="public-subtitle">
                     {personExists
                         ? 'Lütfen adres bilgilerinizi kontrol edin ve gerekirse güncelleyin.'
