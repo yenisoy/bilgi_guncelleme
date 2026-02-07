@@ -53,6 +53,60 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Export to Excel (MUST be before /:id to prevent Express matching 'export' as an id)
+router.get('/export/excel', async (req, res) => {
+    try {
+        const { btnName, btnLink } = req.query;
+        // Build base URL from request headers (works behind nginx/traefik proxy)
+        const protocol = req.get('x-forwarded-proto') || req.protocol;
+        const host = req.get('x-forwarded-host') || req.get('host');
+        const baseUrl = `${protocol}://${host}`;
+
+        const persons = await Person.find().sort({ createdAt: -1 });
+
+        const data = [
+            ['Kod', 'İsim', 'Soyisim', 'Telefon', 'Email', 'İl', 'İlçe', 'Mahalle', 'Sokak', 'Bina No', 'Daire No', 'Posta Kodu', 'Tam Adres', 'Link']
+        ];
+
+        for (const p of persons) {
+            let link = `${baseUrl}/?r=${p.uniqueCode}`;
+            if (btnName && btnLink) {
+                link += `&btnName=${encodeURIComponent(btnName)}&btnLink=${encodeURIComponent(btnLink)}`;
+            }
+
+            data.push([
+                p.uniqueCode || '',
+                p.firstName || '',
+                p.lastName || '',
+                p.phone || '',
+                p.email || '',
+                p.province || '',
+                p.district || '',
+                p.neighborhood || '',
+                p.street || '',
+                p.buildingNo || '',
+                p.apartmentNo || '',
+                p.postalCode || '',
+                p.fullAddress || '',
+                link
+            ]);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Kişiler');
+
+        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=kisiler.xlsx');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Export error:', error);
+        res.status(500).json({ error: 'Excel export sırasında hata oluştu' });
+    }
+});
+
 // Get single person
 router.get('/:id', async (req, res) => {
     try {
@@ -111,57 +165,6 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         console.error('Delete person error:', error);
         res.status(500).json({ error: 'Kişi silinirken hata oluştu' });
-    }
-});
-
-// Export to Excel
-router.get('/export/excel', async (req, res) => {
-    try {
-        const { hostname, btnName, btnLink } = req.query;
-        const host = hostname || 'localhost';
-
-        const persons = await Person.find().sort({ createdAt: -1 });
-
-        const data = [
-            ['Kod', 'İsim', 'Soyisim', 'Telefon', 'Email', 'İl', 'İlçe', 'Mahalle', 'Sokak', 'Bina No', 'Daire No', 'Posta Kodu', 'Tam Adres', 'Link']
-        ];
-
-        for (const p of persons) {
-            let link = `http://${host}:4000/?r=${p.uniqueCode}`;
-            if (btnName && btnLink) {
-                link += `&btnName=${encodeURIComponent(btnName)}&btnLink=${encodeURIComponent(btnLink)}`;
-            }
-
-            data.push([
-                p.uniqueCode || '',
-                p.firstName || '',
-                p.lastName || '',
-                p.phone || '',
-                p.email || '',
-                p.province || '',
-                p.district || '',
-                p.neighborhood || '',
-                p.street || '',
-                p.buildingNo || '',
-                p.apartmentNo || '',
-                p.postalCode || '',
-                p.fullAddress || '',
-                link
-            ]);
-        }
-
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Kişiler');
-
-        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=kisiler.xlsx');
-        res.send(buffer);
-    } catch (error) {
-        console.error('Export error:', error);
-        res.status(500).json({ error: 'Excel export sırasında hata oluştu' });
     }
 });
 

@@ -147,7 +147,7 @@ function changePage(delta) {
 }
 
 function copyLink(code, element) {
-    let link = `${window.location.protocol}//${window.location.hostname}:4000/?r=${code}`;
+    let link = `${window.location.origin}/?r=${code}`;
 
     const btnName = document.getElementById('btn-name-input').value.trim();
     const btnLink = document.getElementById('btn-link-input').value.trim();
@@ -439,9 +439,9 @@ async function exportToExcel() {
         const btnName = document.getElementById('btn-name-input').value.trim();
         const btnLink = document.getElementById('btn-link-input').value.trim();
 
-        let queryParams = `hostname=${window.location.hostname}`;
-        if (btnName) queryParams += `&btnName=${encodeURIComponent(btnName)}`;
-        if (btnLink) queryParams += `&btnLink=${encodeURIComponent(btnLink)}`;
+        let queryParams = '';
+        if (btnName) queryParams += `btnName=${encodeURIComponent(btnName)}`;
+        if (btnLink) queryParams += `${queryParams ? '&' : ''}btnLink=${encodeURIComponent(btnLink)}`;
 
         showToast('Excel hazırlanıyor...', 'success');
         const token = localStorage.getItem('token');
