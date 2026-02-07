@@ -3,14 +3,11 @@ version: "3.8"
 services:
   mongo:
     image: mongo:7
-    container_name: adres-mongo
     restart: unless-stopped
     volumes:
       - mongo_data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=adres-dogrulama
-    networks:
-      - adres-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/adres-dogrulama --quiet
       interval: 10s
@@ -19,14 +16,13 @@ services:
       start_period: 30s
 
   backend:
-    build: ./backend
-    container_name: adres-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       mongo:
         condition: service_healthy
-    expose:
-      - "3001"
     environment:
       - PORT=3001
       - MONGODB_URI=mongodb://mongo:27017/adres-dogrulama
@@ -34,8 +30,8 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@test.com}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
-    networks:
-      - adres-network
+    expose:
+      - "3001"
     healthcheck:
       test:
         [
@@ -50,24 +46,22 @@ services:
       timeout: 10s
       retries: 10
       start_period: 90s
-
     labels:
-      - "coolify.managed=true"
-      - "coolify.port=3001"
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`${SERVICE_FQDN_BACKEND}`)
+      - traefik.http.routers.backend.entrypoints=web,websecure
+      - traefik.http.services.backend.loadbalancer.server.port=3001
 
   frontend:
-    build: ./frontend
-    container_name: adres-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
     expose:
       - "80"
-    environment:
-      - API_URL=${API_URL:-http://backend:3001}
-    networks:
-      - adres-network
     healthcheck:
       test:
         [
@@ -82,14 +76,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
     labels:
-      - "coolify.managed=true"
-      - "coolify.port=80"
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`${SERVICE_FQDN_FRONTEND}`)
+      - traefik.http.routers.frontend.entrypoints=web,websecure
+      - traefik.http.services.frontend.loadbalancer.server.port=80
 
 volumes:
   mongo_data:
-
-networks:
-  adres-network:
-    driver: bridge
