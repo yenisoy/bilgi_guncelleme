@@ -256,32 +256,6 @@ textarea {
     color: #b91c1c;
 }
 
-/* Alert */
-.alert {
-    padding: 1rem 1.25rem;
-    border-radius: var(--radius);
-    margin-bottom: 1rem;
-    font-size: 0.9375rem;
-}
-
-.alert-success {
-    background: var(--color-success-light);
-    color: #047857;
-    border: 1px solid #a7f3d0;
-}
-
-.alert-error {
-    background: var(--color-danger-light);
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-}
-
-.alert-info {
-    background: var(--color-primary-light);
-    color: #4338ca;
-    border: 1px solid #c7d2fe;
-}
-
 /* Loading */
 .loading {
     display: flex;
@@ -546,51 +520,6 @@ textarea {
     border-top: 1px solid var(--color-border);
 }
 
-/* Toast */
-#toast-container {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 9999;
-}
-
-.toast {
-    background: #1e293b;
-    color: #f8fafc;
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius);
-    margin-bottom: 0.5rem;
-    box-shadow: var(--shadow-lg);
-    animation: slideIn 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.toast.success::before {
-    content: '✓';
-    color: #10b981;
-    font-weight: bold;
-}
-
-.toast.error::before {
-    content: '✕';
-    color: #ef4444;
-    font-weight: bold;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
 /* Utilities */
 .text-center {
     text-align: center;
@@ -656,30 +585,8 @@ textarea {
     margin-bottom: 1rem;
 }
 
-.footer-text {
-    margin-top: 2rem;
-    font-size: 0.875rem;
-}
-
-/* ================================================
-   RESPONSIVE DESIGN - MOBILE & TABLET
-   ================================================ */
-
-/* Tablet and Below (max-width: 1024px) */
-@media (max-width: 1024px) {
-    .container {
-        padding: 0 1rem;
-    }
-
-    .page {
-        padding: 1.5rem 0;
-    }
-}
-
-/* Mobile Landscape and Below (max-width: 768px) */
+/* Responsive */
 @media (max-width: 768px) {
-
-    /* General Layout */
     body {
         font-size: 14px;
     }
@@ -692,7 +599,6 @@ textarea {
         padding: 1rem 0;
     }
 
-    /* Cards */
     .card {
         padding: 1rem;
         border-radius: var(--radius);
@@ -702,59 +608,21 @@ textarea {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.75rem;
-        margin-bottom: 1rem;
     }
 
-    .card-title {
-        font-size: 1.1rem;
-    }
-
-    /* Forms */
     .form-row {
         grid-template-columns: 1fr !important;
-        gap: 1rem;
-    }
-
-    .form-group {
-        margin-bottom: 0;
-    }
-
-    .form-label {
-        font-size: 0.875rem;
-        margin-bottom: 0.375rem;
     }
 
     .form-input,
     .form-select {
         font-size: 16px;
-        /* Prevents iOS zoom */
         padding: 0.75rem;
         min-height: 44px;
-        /* Touch-friendly */
     }
 
-    textarea.form-input {
-        min-height: 100px;
-    }
-
-    /* Buttons - Touch Friendly */
     .btn {
         min-height: 44px;
-        padding: 0.75rem 1rem;
-        font-size: 0.9375rem;
-    }
-
-    .btn-full {
-        width: 100%;
-    }
-
-    .btn-sm {
-        min-height: 38px;
-        padding: 0.5rem 0.875rem;
-    }
-
-    /* Navigation */
-    .navbar {
         padding: 0.75rem 1rem;
     }
 
@@ -765,181 +633,15 @@ textarea {
     }
 
     .nav-link {
-        padding: 0.625rem 0.875rem;
         width: 100%;
-        justify-content: flex-start;
     }
 
-    /* Tables - Horizontal Scroll */
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin: 0 -1rem;
-        padding: 0 1rem;
-    }
-
-    table {
-        min-width: 600px;
-        font-size: 0.875rem;
-    }
-
-    th,
-    td {
-        padding: 0.625rem 0.5rem;
-    }
-
-    /* Modals */
-    .modal-content {
-        width: 95%;
-        max-width: none;
-        padding: 1rem;
-        margin: 1rem;
-    }
-
-    .modal-header {
-        padding: 0.875rem 0;
-        margin-bottom: 1rem;
-    }
-
-    .modal-title {
-        font-size: 1.125rem;
-    }
-
-    /* Public Form */
-    .public-container {
-        padding: 1rem;
-    }
-
-    .public-header {
-        padding: 1.5rem 1rem;
-    }
-
-    .public-title {
-        font-size: 1.5rem;
-    }
-
-    .public-subtitle {
-        font-size: 0.9375rem;
-    }
-
-    .public-card {
-        padding: 1.25rem;
-    }
-
-    /* Data Diff */
     .data-diff {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
     }
 
-    /* Toast Notifications - Mobile Position */
-    #toast-container {
-        bottom: 1rem;
-        right: 1rem;
-        left: 1rem;
-    }
-
-    .toast {
-        width: 100%;
-    }
-
-    /* Badge Adjustments */
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    /* Search Bar */
-    #search-input {
-        font-size: 16px;
-        /* Prevents iOS zoom */
-    }
-}
-
-/* Mobile Portrait (max-width: 480px) */
-@media (max-width: 480px) {
-    body {
-        font-size: 13px;
-    }
-
-    .public-title {
-        font-size: 1.25rem;
-    }
-
-    .public-subtitle {
-        font-size: 0.875rem;
-    }
-
-    .card {
-        padding: 0.875rem;
-    }
-
-    .btn {
-        font-size: 0.875rem;
-    }
-
-    .section-title {
-        font-size: 1rem;
-    }
-
-    /* Stack action buttons vertically */
-    .card-header .btn-group,
-    .actions-footer {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .card-header .btn-group .btn,
-    .actions-footer .btn {
-        width: 100%;
-    }
-
-    /* Table - Full responsive */
-    table {
-        font-size: 0.8125rem;
-    }
-
-    th,
-    td {
-        padding: 0.5rem 0.375rem;
-    }
-}
-
-/* ================================================
-   INTL TEL INPUT - MOBILE OPTIMIZATIONS
-   ================================================ */
-.iti {
-    width: 100% !important;
-    display: block;
-    margin-bottom: 0;
-}
-
-.iti__flag {
-    background-image: url("https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/img/flags.png");
-}
-
-@media (-webkit-min-device-pixel-ratio: 2),
-(min-resolution: 192dpi) {
-    .iti__flag {
-        background-image: url("https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/img/flags@2x.png");
-    }
-}
-
-/* Mobile-specific intl-tel-input adjustments */
-@media (max-width: 768px) {
-    .iti__country-list {
-        max-height: 200px;
-        width: 300px;
-        max-width: 90vw;
-    }
-
-    .iti__selected-flag {
-        padding: 0 8px 0 10px;
-    }
-
-    .iti input[type="tel"] {
-        font-size: 16px !important;
-        /* Prevents iOS zoom */
-        padding-left: 55px !important;
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
     }
 }

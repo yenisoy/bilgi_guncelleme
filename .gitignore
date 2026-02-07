@@ -37,3 +37,9 @@ public-html/
 # Excel files
 *.xlsx
 *.xls
+
+# Old frontend (archived)
+eski-frontend/
+
+# Docs folder (internal documentation)
+docs/

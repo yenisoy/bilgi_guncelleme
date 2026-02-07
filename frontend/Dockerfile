@@ -1,24 +1,35 @@
+# Build stage
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production=false
+
+# Copy source code
+COPY . .
+
+# Build the app
+RUN npm run build
+
+# Production stage
 FROM nginx:alpine
 
 # Install wget for health checks
 RUN apk add --no-cache wget
 
-# Cache bust - forces rebuild (updated: 2026-02-06-1835)
-ARG CACHEBUST=3
-RUN echo "Build timestamp: $(date)" > /tmp/build_timestamp
-
-# Copy static files
-COPY . /usr/share/nginx/html
-
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Remove nginx.conf from html folder
-RUN rm -f /usr/share/nginx/html/nginx.conf /usr/share/nginx/html/Dockerfile
+# Copy built files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:80/health || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

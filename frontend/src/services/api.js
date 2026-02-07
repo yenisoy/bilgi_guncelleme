@@ -1,20 +1,5 @@
-// API Configuration - Use relative path so nginx can proxy to backend
+// API Configuration - Use relative path so nginx/vite proxy can route to backend
 const API_BASE_URL = '/api';
-
-// Toast notification
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
-}
 
 // Fetch wrapper with auth
 async function fetchAPI(endpoint, options = {}) {
@@ -32,32 +17,27 @@ async function fetchAPI(endpoint, options = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers
-        });
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!response.ok) {
-            if (response.status === 401 && window.location.pathname.includes('/admin')) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-                return;
-            }
-            throw new Error(data.error || 'Bir hata oluştu');
+    if (!response.ok) {
+        if (response.status === 401 && window.location.pathname.includes('/admin')) {
+            localStorage.removeItem('token');
+            window.location.href = '/admin/login';
+            return;
         }
-
-        return data;
-    } catch (error) {
-        console.error('API Error:', error);
-        throw error;
+        throw new Error(data.error || 'Bir hata oluştu');
     }
+
+    return data;
 }
 
 // API methods
-const API = {
+const api = {
     auth: {
         login: (email, password) => fetchAPI('/auth/login', {
             method: 'POST',
@@ -118,3 +98,5 @@ const API = {
             fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`)
     }
 };
+
+export default api;
