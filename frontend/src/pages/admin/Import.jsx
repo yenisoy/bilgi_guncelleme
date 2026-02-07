@@ -51,6 +51,36 @@ export default function Import() {
         }
     };
 
+    const downloadSampleExcel = () => {
+        // CSV formatında örnek dosya oluştur
+        const headers = ['firstName', 'lastName', 'email', 'phone'];
+        const sampleData = [
+            ['Ahmet', 'Yılmaz', 'ahmet@email.com', '05321234567'],
+            ['Mehmet', 'Demir', 'mehmet@email.com', '05339876543'],
+            ['Ayşe', 'Kaya', 'ayse@email.com', '05551112233']
+        ];
+
+        const csvContent = [
+            headers.join(','),
+            ...sampleData.map(row => row.join(','))
+        ].join('\n');
+
+        // BOM ekle (Excel'de Türkçe karakterler için)
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'ornek_kisi_listesi.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('Örnek dosya indirildi');
+    };
+
     return (
         <>
             <Navbar />
@@ -113,7 +143,15 @@ export default function Import() {
                     )}
 
                     <div className="mt-4">
-                        <h4 className="section-title">Örnek Dosya Formatı</h4>
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="section-title" style={{ margin: 0 }}>Örnek Dosya Formatı</h4>
+                            <button
+                                className="btn btn-secondary btn-sm"
+                                onClick={downloadSampleExcel}
+                            >
+                                📥 Örnek CSV İndir
+                            </button>
+                        </div>
                         <div className="table-container">
                             <table className="table">
                                 <thead>
@@ -146,3 +184,4 @@ export default function Import() {
         </>
     );
 }
+
