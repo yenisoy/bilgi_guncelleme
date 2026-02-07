@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../../components/Navbar';
+import * as XLSX from 'xlsx';
 
 export default function Import() {
     const [file, setFile] = useState(null);
@@ -52,33 +53,24 @@ export default function Import() {
     };
 
     const downloadSampleExcel = () => {
-        // CSV formatında örnek dosya oluştur
-        const headers = ['firstName', 'lastName', 'email', 'phone'];
+        // Örnek veri
         const sampleData = [
-            ['Ahmet', 'Yılmaz', 'ahmet@email.com', '05321234567'],
-            ['Mehmet', 'Demir', 'mehmet@email.com', '05339876543'],
-            ['Ayşe', 'Kaya', 'ayse@email.com', '05551112233']
+            { firstName: 'Ahmet', lastName: 'Yılmaz', email: 'ahmet@email.com', phone: '05321234567' },
+            { firstName: 'Mehmet', lastName: 'Demir', email: 'mehmet@email.com', phone: '05339876543' },
+            { firstName: 'Ayşe', lastName: 'Kaya', email: 'ayse@email.com', phone: '05551112233' }
         ];
 
-        const csvContent = [
-            headers.join(','),
-            ...sampleData.map(row => row.join(','))
-        ].join('\n');
+        // Worksheet oluştur
+        const ws = XLSX.utils.json_to_sheet(sampleData);
 
-        // BOM ekle (Excel'de Türkçe karakterler için)
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
+        // Workbook oluştur
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Kişiler');
 
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'ornek_kisi_listesi.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // Excel dosyası olarak indir
+        XLSX.writeFile(wb, 'ornek_kisi_listesi.xlsx');
 
-        toast.success('Örnek dosya indirildi');
+        toast.success('Örnek Excel dosyası indirildi');
     };
 
     return (
@@ -149,7 +141,7 @@ export default function Import() {
                                 className="btn btn-secondary btn-sm"
                                 onClick={downloadSampleExcel}
                             >
-                                📥 Örnek CSV İndir
+                                📥 Örnek Excel İndir
                             </button>
                         </div>
                         <div className="table-container">
