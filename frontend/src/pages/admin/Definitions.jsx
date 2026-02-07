@@ -10,6 +10,7 @@ export default function Definitions() {
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [neighborhoods, setNeighborhoods] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     useEffect(() => {
         loadProvinces();
@@ -32,7 +33,7 @@ export default function Definitions() {
     const loadProvinces = async () => {
         try {
             const data = await api.address.getProvinces();
-            setProvinces(data.provinces || []);
+            setProvinces(data.provinces || data || []);
         } catch (error) {
             toast.error('İller yüklenemedi');
         }
@@ -42,7 +43,7 @@ export default function Definitions() {
         try {
             setLoading(true);
             const data = await api.address.getDistricts(provinceId);
-            setDistricts(data.districts || []);
+            setDistricts(data.districts || data || []);
         } catch (error) {
             toast.error('İlçeler yüklenemedi');
         } finally {
@@ -54,11 +55,32 @@ export default function Definitions() {
         try {
             setLoading(true);
             const data = await api.address.getNeighborhoods(provinceId, districtId);
-            setNeighborhoods(data.neighborhoods || []);
+            setNeighborhoods(data.neighborhoods || data || []);
         } catch (error) {
             toast.error('Mahalleler yüklenemedi');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const syncAddresses = async () => {
+        if (!window.confirm('Tüm Türkiye adres verisini (İl, İlçe, Mahalle) güncellemek istiyor musunuz?\n\nBu işlem 5-10 dakika sürebilir ve arka planda çalışır.')) {
+            return;
+        }
+
+        try {
+            setSyncing(true);
+            toast.success('Adres senkronizasyonu başlatılıyor...');
+            const data = await api.address.sync();
+            toast.success(data.message || 'Senkronizasyon başlatıldı');
+            // Reload provinces after sync
+            setTimeout(() => {
+                loadProvinces();
+            }, 2000);
+        } catch (error) {
+            toast.error(error.message || 'Senkronizasyon başlatılamadı');
+        } finally {
+            setSyncing(false);
         }
     };
 
@@ -69,11 +91,25 @@ export default function Definitions() {
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">Adres Tanımları</h2>
+                        <button
+                            className="btn btn-primary"
+                            onClick={syncAddresses}
+                            disabled={syncing}
+                        >
+                            {syncing ? '🔄 Senkronize ediliyor...' : '🔄 Adresleri Güncelle'}
+                        </button>
                     </div>
+
+                    {provinces.length === 0 && (
+                        <div className="alert alert-warning mb-4">
+                            <p><strong>Adres verisi bulunamadı!</strong></p>
+                            <p>İl, ilçe ve mahalle verilerini yüklemek için "Adresleri Güncelle" butonuna tıklayın.</p>
+                        </div>
+                    )}
 
                     <div className="form-row mb-4">
                         <div className="form-group">
-                            <label className="form-label">İl</label>
+                            <label className="form-label">İl ({provinces.length})</label>
                             <select
                                 className="form-select"
                                 value={selectedProvince}
@@ -89,7 +125,7 @@ export default function Definitions() {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">İlçe</label>
+                            <label className="form-label">İlçe ({districts.length})</label>
                             <select
                                 className="form-select"
                                 value={selectedDistrict}

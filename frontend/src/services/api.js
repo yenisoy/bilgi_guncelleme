@@ -103,7 +103,8 @@ const api = {
         getNeighborhoods: (provinceId, districtId) =>
             fetchAPI(`/address/neighborhoods/${provinceId}/${districtId}`),
         getStreets: (provinceId, districtId, neighborhoodId) =>
-            fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`)
+            fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`),
+        sync: () => fetchAPI('/address/sync', { method: 'POST' })
     }
 };
 
