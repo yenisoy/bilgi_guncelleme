@@ -111,7 +111,7 @@ async function loadPersons() {
 
 function formatTrackingTooltip(dates, label) {
     if (!dates || dates.length === 0) return '';
-    return dates.map((d, i) => `${i + 1}. ${label}: ${new Date(d).toLocaleString('tr-TR')}`).join('\n');
+    return dates.map((d, i) => `${i + 1}. ${label}: ${new Date(d).toLocaleString('tr-TR')}`).join('&#10;');
 }
 
 function renderPersonsTable(persons) {
@@ -121,9 +121,9 @@ function renderPersonsTable(persons) {
         const submissions = person.formSubmissions || [];
         const clicks = person.buttonClicks || [];
 
-        const visited = visits.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(visits, 'Ziyaret')}">👁 ${visits.length}</span>` : '<span class="badge bg-secondary" title="Henüz ziyaret edilmedi">👁 0</span>';
-        const submitted = submissions.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(submissions, 'Gönderim')}">📝 ${submissions.length}</span>` : '<span class="badge bg-secondary" title="Form gönderilmedi">📝 0</span>';
-        const clicked = clicks.length > 0 ? `<span class="badge bg-success" title="${formatTrackingTooltip(clicks, 'Tıklama')}">🖱 ${clicks.length}</span>` : '<span class="badge bg-secondary" title="Butona tıklanmadı">🖱 0</span>';
+        const visited = visits.length > 0 ? '<span class="badge bg-success" style="cursor:help" title="' + formatTrackingTooltip(visits, 'Ziyaret') + '">👁 ' + visits.length + '</span>' : '<span class="badge bg-secondary">👁 0</span>';
+        const submitted = submissions.length > 0 ? '<span class="badge bg-success" style="cursor:help" title="' + formatTrackingTooltip(submissions, 'Gönderim') + '">📝 ' + submissions.length + '</span>' : '<span class="badge bg-secondary">📝 0</span>';
+        const clicked = clicks.length > 0 ? '<span class="badge bg-success" style="cursor:help" title="' + formatTrackingTooltip(clicks, 'Tıklama') + '">🖱 ' + clicks.length + '</span>' : '<span class="badge bg-secondary">🖱 0</span>';
 
         return `
         <tr>

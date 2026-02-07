@@ -519,10 +519,10 @@ function showSuccessState(message) {
             btn.href = url;
             container.style.display = 'block';
 
-            // Track button click
-            btn.addEventListener('click', () => {
+            // Track button click - use sendBeacon so it completes even during navigation
+            btn.addEventListener('click', (e) => {
                 if (refCode) {
-                    fetch(`${API_BASE_URL}/public/track-click/${refCode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+                    navigator.sendBeacon(`${API_BASE_URL}/public/track-click/${refCode}`);
                 }
             });
         }
