@@ -449,7 +449,7 @@ async function exportToExcel() {
         // Use updated API_BASE_URL logic directly or construct it similarly
         // Since we are doing a direct fetch here (not via API wrapper for blob handling easily? actually API wrapper might work but this is custom)
         // Let's stick to the existing fetch pattern but append params
-        const response = await fetch(`http://${window.location.hostname}:3001/api/persons/export/excel?${queryParams}`, {
+        const response = await fetch(`/api/persons/export/excel?${queryParams}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -479,7 +479,7 @@ async function syncAddresses() {
     try {
         showToast('Senkronizasyon başlatılıyor...', 'success');
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://${window.location.hostname}:3001/api/address/sync`, {
+        const response = await fetch(`/api/address/sync`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });

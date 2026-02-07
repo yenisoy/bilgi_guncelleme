@@ -2,7 +2,7 @@
 // Bilgi Doğrulama - Public Form JavaScript
 // =============================================
 
-const API_BASE_URL = window.API_BASE_URL || `http://${window.location.hostname}:3001/api`;
+const API_BASE_URL = '/api';
 
 // State
 let refCode = null;

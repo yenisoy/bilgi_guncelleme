@@ -314,7 +314,7 @@ async function fetchWithAuth(endpoint, method = 'GET', body = null) {
     if (body) options.body = JSON.stringify(body);
 
     // Use global API_BASE_URL from api.js if available, otherwise fallback
-    const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : `http://${window.location.hostname}:3001/api`;
+    const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '/api';
 
     // Remove /api prefix if endpoint already has it or if base url includes it
     // Endpoint passed here is usually /address-management/... which doesn't start with /api
