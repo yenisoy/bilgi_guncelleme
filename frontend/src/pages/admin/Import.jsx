@@ -3,6 +3,7 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../../components/Navbar';
 import * as XLSX from 'xlsx';
+import './Import.css';
 
 export default function Import() {
     const [file, setFile] = useState(null);
@@ -301,13 +302,6 @@ export default function Import() {
                     </div>
                 </div>
             </div>
-
-            <style jsx>{`
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `}</style>
         </>
     );
 }
