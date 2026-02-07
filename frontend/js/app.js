@@ -12,6 +12,7 @@ let selectedProvince = null;
 let selectedDistrict = null;
 let selectedNeighborhood = null;
 let dynamicBtnConfig = { text: null, url: null };
+let isEmbedMode = false;
 
 // Helper: Normalize String
 const normalize = (str) => str ? str.toLocaleLowerCase('tr').replace(/İ/g, 'i').replace(/I/g, 'ı').trim() : '';
@@ -517,6 +518,10 @@ function showSuccessState(message) {
                 url = 'https://' + url;
             }
             btn.href = url;
+            // In iframe/embed mode, open in parent window instead of new tab
+            if (isEmbedMode || window.self !== window.top) {
+                btn.target = '_top';
+            }
             container.style.display = 'block';
 
             // Track button click - use sendBeacon so it completes even during navigation
@@ -614,6 +619,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Get dynamic button params
     dynamicBtnConfig.text = urlParams.get('btnName');
     dynamicBtnConfig.url = urlParams.get('btnLink');
+
+    // Embed mode - hide header/footer for iframe usage
+    isEmbedMode = urlParams.get('embed') === '1';
+    if (isEmbedMode) {
+        document.body.classList.add('embed-mode');
+        const header = document.querySelector('.public-header');
+        const securityBadge = document.querySelector('.security-badge');
+        const maveraFooter = securityBadge?.nextElementSibling;
+        if (header) header.style.display = 'none';
+        if (securityBadge) securityBadge.style.display = 'none';
+        if (maveraFooter) maveraFooter.style.display = 'none';
+    }
 
     // Setup address selector events
     document.getElementById('province').addEventListener('change', onProvinceChange);
