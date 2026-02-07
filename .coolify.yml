@@ -1,38 +1,54 @@
 services:
-  - name: adres-mongo
+  adres-mongo:
     image: mongo:7
+    restart: unless-stopped
     volumes:
       - mongo_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: adres-dogrulama
-    internal: true
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - "--eval"
+        - "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  - name: adres-backend
+  adres-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: unless-stopped
     depends_on:
       - adres-mongo
     environment:
+      NODE_ENV: production
       PORT: 3001
-      MONGODB_URI: mongodb://adres-mongo:27017/adres-dogrulama
-      JWT_SECRET: ${JWT_SECRET}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-    internal: true
+      MONGODB_URI: "mongodb://adres-mongo:27017/adres-dogrulama"
+      JWT_SECRET: "${JWT_SECRET}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS}"
+    expose:
+      - "3001"
 
-  - name: adres-frontend
+  adres-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    restart: unless-stopped
     depends_on:
       - adres-backend
-    ports:
-      - 80:80
-    environment:
-      API_URL: http://adres-backend:3001
-    public: true
+    expose:
+      - "80"
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.adres-frontend.rule=Host(`${SERVICE_FQDN_ADRES_FRONTEND}`)"
+      - "traefik.http.routers.adres-frontend.entrypoints=web,websecure"
+      - traefik.http.services.adres-frontend.loadbalancer.server.port=80
 
 volumes:
-  - mongo_data
+  mongo_data:
+    driver: local

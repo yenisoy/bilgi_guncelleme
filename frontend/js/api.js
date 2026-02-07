@@ -1,5 +1,20 @@
-// API Configuration - Use relative path so nginx/vite proxy can route to backend
+// API Configuration - Use relative path so nginx can proxy to backend
 const API_BASE_URL = '/api';
+
+// Toast notification
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
 
 // Fetch wrapper with auth
 async function fetchAPI(endpoint, options = {}) {
@@ -17,27 +32,32 @@ async function fetchAPI(endpoint, options = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    if (!response.ok) {
-        if (response.status === 401 && window.location.pathname.includes('/admin')) {
-            localStorage.removeItem('token');
-            window.location.href = '/admin/login';
-            return;
+        if (!response.ok) {
+            if (response.status === 401 && window.location.pathname.includes('/admin')) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error(data.error || 'Bir hata oluştu');
         }
-        throw new Error(data.error || 'Bir hata oluştu');
-    }
 
-    return data;
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
 }
 
 // API methods
-const api = {
+const API = {
     auth: {
         login: (email, password) => fetchAPI('/auth/login', {
             method: 'POST',
@@ -68,20 +88,6 @@ const api = {
                 method: 'POST',
                 body: formData
             });
-        },
-        exportExcel: async (params = {}) => {
-            const token = localStorage.getItem('token');
-            const queryParams = new URLSearchParams();
-            if (params.hostname) queryParams.append('hostname', params.hostname);
-            if (params.btnName) queryParams.append('btnName', params.btnName);
-            if (params.btnLink) queryParams.append('btnLink', params.btnLink);
-
-            const queryString = queryParams.toString();
-            const response = await fetch(`${API_BASE_URL}/persons/export/excel${queryString ? '?' + queryString : ''}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error('Export başarısız');
-            return response.blob();
         }
     },
 
@@ -109,17 +115,6 @@ const api = {
         getNeighborhoods: (provinceId, districtId) =>
             fetchAPI(`/address/neighborhoods/${provinceId}/${districtId}`),
         getStreets: (provinceId, districtId, neighborhoodId) =>
-            fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`),
-        sync: () => fetchAPI('/address/sync', { method: 'POST' })
-    },
-
-    addressManagement: {
-        add: (data) => fetchAPI('/address-management/add', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        }),
-        delete: (id) => fetchAPI(`/address-management/${id}`, { method: 'DELETE' })
+            fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`)
     }
 };
-
-export default api;
