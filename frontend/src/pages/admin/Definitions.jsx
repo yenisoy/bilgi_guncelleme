@@ -16,6 +16,16 @@ export default function Definitions() {
     const [syncing, setSyncing] = useState(false);
     const [search, setSearch] = useState('');
 
+    // Modal states for adding new entries
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [newEntry, setNewEntry] = useState({
+        name: '',
+        postalCode: '',
+        provinceId: '',
+        districtId: ''
+    });
+
     useEffect(() => {
         loadProvinces();
     }, []);
@@ -88,6 +98,97 @@ export default function Definitions() {
         }
     };
 
+    // Open add modal
+    const openAddModal = () => {
+        setNewEntry({
+            name: '',
+            postalCode: '',
+            provinceId: selectedProvince || '',
+            districtId: selectedDistrict || ''
+        });
+        setShowAddModal(true);
+    };
+
+    // Handle adding new entry
+    const handleAddEntry = async (e) => {
+        e.preventDefault();
+        if (!newEntry.name.trim()) {
+            toast.error('İsim zorunludur');
+            return;
+        }
+
+        try {
+            setSaving(true);
+
+            if (activeTab === 'province') {
+                await api.addressManagement.add({ type: 'province', name: newEntry.name });
+                toast.success('İl eklendi');
+                loadProvinces();
+            } else if (activeTab === 'district') {
+                if (!newEntry.provinceId) {
+                    toast.error('İl seçmelisiniz');
+                    return;
+                }
+                // Backend expects parentId (which is the province's placeId/id)
+                await api.addressManagement.add({
+                    type: 'district',
+                    name: newEntry.name,
+                    parentId: newEntry.provinceId
+                });
+                toast.success('İlçe eklendi');
+                if (selectedProvince) loadDistricts(selectedProvince);
+            } else if (activeTab === 'neighborhood') {
+                if (!newEntry.provinceId || !newEntry.districtId) {
+                    toast.error('İl ve ilçe seçmelisiniz');
+                    return;
+                }
+                // Backend expects parentId (which is the district's placeId/id)
+                await api.addressManagement.add({
+                    type: 'neighborhood',
+                    name: newEntry.name,
+                    parentId: newEntry.districtId
+                });
+                toast.success('Mahalle eklendi');
+                if (selectedProvince && selectedDistrict) {
+                    loadNeighborhoods(selectedProvince, selectedDistrict);
+                }
+            }
+
+            setShowAddModal(false);
+        } catch (error) {
+            toast.error(error.message || 'Ekleme başarısız');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Handle delete entry (only for manual entries)
+    const handleDeleteEntry = async (item, type) => {
+        if (!item.isManual) {
+            toast.error('Sadece manuel eklenen kayıtlar silinebilir');
+            return;
+        }
+
+        if (!window.confirm(`"${item.name}" kaydını silmek istediğinize emin misiniz?`)) {
+            return;
+        }
+
+        try {
+            await api.addressManagement.delete(item._id || item.id);
+            toast.success('Kayıt silindi');
+
+            if (type === 'province') {
+                loadProvinces();
+            } else if (type === 'district') {
+                loadDistricts(selectedProvince);
+            } else if (type === 'neighborhood') {
+                loadNeighborhoods(selectedProvince, selectedDistrict);
+            }
+        } catch (error) {
+            toast.error(error.message || 'Silme başarısız');
+        }
+    };
+
     const filterData = (data) => {
         if (!search) return data;
         return data.filter(item =>
@@ -105,6 +206,15 @@ export default function Definitions() {
         return district?.name || '';
     };
 
+    const getModalTitle = () => {
+        switch (activeTab) {
+            case 'province': return 'Yeni İl Ekle';
+            case 'district': return 'Yeni İlçe Ekle';
+            case 'neighborhood': return 'Yeni Mahalle Ekle';
+            default: return 'Yeni Kayıt Ekle';
+        }
+    };
+
     return (
         <>
             <Navbar />
@@ -112,13 +222,21 @@ export default function Definitions() {
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">Adres Tanımları</h2>
-                        <button
-                            className="btn btn-primary"
-                            onClick={syncAddresses}
-                            disabled={syncing}
-                        >
-                            {syncing ? '🔄 Senkronize ediliyor...' : '🔄 Adresleri Güncelle'}
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                className="btn btn-success"
+                                onClick={openAddModal}
+                            >
+                                ➕ Yeni Ekle
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={syncAddresses}
+                                disabled={syncing}
+                            >
+                                {syncing ? '🔄 Senkronize ediliyor...' : '🔄 Adresleri Güncelle'}
+                            </button>
+                        </div>
                     </div>
 
                     {provinces.length === 0 && !loading && (
@@ -316,6 +434,101 @@ export default function Definitions() {
                     )}
                 </div>
             </div>
+
+            {/* Add Entry Modal */}
+            {showAddModal && (
+                <div className="modal">
+                    <div className="modal-backdrop" onClick={() => setShowAddModal(false)}></div>
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3>{getModalTitle()}</h3>
+                            <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
+                        </div>
+                        <form onSubmit={handleAddEntry}>
+                            {/* Province select for district/neighborhood */}
+                            {(activeTab === 'district' || activeTab === 'neighborhood') && (
+                                <div className="form-group">
+                                    <label className="form-label">İl *</label>
+                                    <select
+                                        className="form-select"
+                                        value={newEntry.provinceId}
+                                        onChange={(e) => {
+                                            setNewEntry({ ...newEntry, provinceId: e.target.value, districtId: '' });
+                                            if (e.target.value) loadDistricts(e.target.value);
+                                        }}
+                                        required
+                                    >
+                                        <option value="">İl Seçin</option>
+                                        {provinces.map((province) => (
+                                            <option key={province.id} value={province.id}>
+                                                {province.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* District select for neighborhood */}
+                            {activeTab === 'neighborhood' && (
+                                <div className="form-group">
+                                    <label className="form-label">İlçe *</label>
+                                    <select
+                                        className="form-select"
+                                        value={newEntry.districtId}
+                                        onChange={(e) => setNewEntry({ ...newEntry, districtId: e.target.value })}
+                                        disabled={!newEntry.provinceId}
+                                        required
+                                    >
+                                        <option value="">{newEntry.provinceId ? 'İlçe Seçin' : 'Önce İl Seçin'}</option>
+                                        {districts.map((district) => (
+                                            <option key={district.id} value={district.id}>
+                                                {district.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label className="form-label">
+                                    {activeTab === 'province' ? 'İl Adı' : activeTab === 'district' ? 'İlçe Adı' : 'Mahalle Adı'} *
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={newEntry.name}
+                                    onChange={(e) => setNewEntry({ ...newEntry, name: e.target.value })}
+                                    placeholder="Adı girin..."
+                                    required
+                                />
+                            </div>
+
+                            {/* Postal code for neighborhood */}
+                            {activeTab === 'neighborhood' && (
+                                <div className="form-group">
+                                    <label className="form-label">Posta Kodu</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={newEntry.postalCode}
+                                        onChange={(e) => setNewEntry({ ...newEntry, postalCode: e.target.value })}
+                                        placeholder="Posta kodu (opsiyonel)"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
+                                    İptal
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={saving}>
+                                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

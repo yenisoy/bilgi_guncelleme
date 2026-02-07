@@ -9,31 +9,60 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingPerson, setEditingPerson] = useState(null);
+
+    // btnName/btnLink for link generation
+    const [btnName, setBtnName] = useState('');
+    const [btnLink, setBtnLink] = useState('');
+
+    // Address selector state
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [neighborhoods, setNeighborhoods] = useState([]);
+    const [selectedProvince, setSelectedProvince] = useState(null);
+    const [selectedDistrict, setSelectedDistrict] = useState(null);
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         email: '',
-        phone: ''
+        phone: '',
+        province: '',
+        district: '',
+        neighborhood: '',
+        street: '',
+        buildingNo: '',
+        apartmentNo: '',
+        postalCode: '',
+        fullAddress: ''
     });
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         loadPersons();
-    }, [page, search]);
+    }, [page, search, limit]);
 
     const loadPersons = async () => {
         try {
             setLoading(true);
-            const data = await api.persons.getAll({ page, search, limit: 20 });
+            const params = { page, search };
+            if (limit !== 'all') params.limit = limit;
+            const data = await api.persons.getAll(params);
             setPersons(data.persons || []);
-            setTotalPages(data.totalPages || 1);
-            setTotalCount(data.pagination?.total || data.total || 0);
+
+            // Calculate totalPages from pagination object or total count
+            const total = data.pagination?.total || data.total || 0;
+            setTotalCount(total);
+
+            // Get totalPages from response or calculate it
+            const pages = data.pagination?.pages || data.totalPages || (limit !== 'all' ? Math.ceil(total / limit) : 1);
+            setTotalPages(pages);
         } catch (error) {
             toast.error('Kişiler yüklenemedi');
         } finally {
@@ -54,7 +83,12 @@ export default function Dashboard() {
     };
 
     const copyLink = (code) => {
-        const url = `${window.location.origin}/?code=${code}`;
+        let url = `${window.location.origin}/?r=${code}`;
+
+        if (btnName && btnLink) {
+            url += `&btnName=${encodeURIComponent(btnName)}&btnLink=${encodeURIComponent(btnLink)}`;
+        }
+
         navigator.clipboard.writeText(url);
         toast.success('Link kopyalandı!');
     };
@@ -62,7 +96,11 @@ export default function Dashboard() {
     const exportToExcel = async () => {
         try {
             toast.success('Excel hazırlanıyor...');
-            const blob = await api.persons.exportExcel();
+            const blob = await api.persons.exportExcel({
+                hostname: window.location.hostname,
+                btnName,
+                btnLink
+            });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -77,18 +115,119 @@ export default function Dashboard() {
         }
     };
 
-    const openAddModal = (person = null) => {
+    // Load provinces on mount
+    useEffect(() => {
+        loadProvinces();
+    }, []);
+
+    const loadProvinces = async () => {
+        try {
+            const data = await api.address.getProvinces();
+            setProvinces(data);
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+        }
+    };
+
+    const loadDistricts = async (provinceId) => {
+        try {
+            const data = await api.address.getDistricts(provinceId);
+            setDistricts(data);
+        } catch (error) {
+            console.error('Error loading districts:', error);
+        }
+    };
+
+    const loadNeighborhoods = async (provinceId, districtId) => {
+        try {
+            const data = await api.address.getNeighborhoods(provinceId, districtId);
+            setNeighborhoods(data);
+        } catch (error) {
+            console.error('Error loading neighborhoods:', error);
+        }
+    };
+
+    const handleProvinceChange = (e) => {
+        const provinceId = e.target.value;
+        const province = provinces.find(p => p.id === provinceId);
+        setSelectedProvince(province || null);
+        setSelectedDistrict(null);
+        setDistricts([]);
+        setNeighborhoods([]);
+        setFormData(prev => ({ ...prev, province: province?.name || '', district: '', neighborhood: '' }));
+
+        if (provinceId) {
+            loadDistricts(provinceId);
+        }
+    };
+
+    const handleDistrictChange = (e) => {
+        const districtId = e.target.value;
+        const district = districts.find(d => d.id === districtId);
+        setSelectedDistrict(district || null);
+        setNeighborhoods([]);
+        setFormData(prev => ({ ...prev, district: district?.name || '', neighborhood: '' }));
+
+        if (selectedProvince && districtId) {
+            loadNeighborhoods(selectedProvince.id, districtId);
+        }
+    };
+
+    const handleNeighborhoodChange = (e) => {
+        const neighborhoodId = e.target.value;
+        const neighborhood = neighborhoods.find(n => n.id === neighborhoodId);
+        setFormData(prev => ({ ...prev, neighborhood: neighborhood?.name || '' }));
+    };
+
+    const openAddModal = async (person = null) => {
+        setSelectedProvince(null);
+        setSelectedDistrict(null);
+        setDistricts([]);
+        setNeighborhoods([]);
+
         if (person) {
             setEditingPerson(person);
             setFormData({
                 firstName: person.firstName || '',
                 lastName: person.lastName || '',
                 email: person.email || '',
-                phone: person.phone || ''
+                phone: person.phone || '',
+                province: person.province || '',
+                district: person.district || '',
+                neighborhood: person.neighborhood || '',
+                street: person.street || '',
+                buildingNo: person.buildingNo || '',
+                apartmentNo: person.apartmentNo || '',
+                postalCode: person.postalCode || '',
+                fullAddress: person.fullAddress || ''
             });
+
+            // Load address selects if editing
+            if (person.province) {
+                const province = provinces.find(p => p.name === person.province);
+                if (province) {
+                    setSelectedProvince(province);
+                    const distData = await api.address.getDistricts(province.id);
+                    setDistricts(distData);
+
+                    if (person.district) {
+                        const district = distData.find(d => d.name === person.district);
+                        if (district) {
+                            setSelectedDistrict(district);
+                            const neighData = await api.address.getNeighborhoods(province.id, district.id);
+                            setNeighborhoods(neighData);
+                        }
+                    }
+                }
+            }
         } else {
             setEditingPerson(null);
-            setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+            setFormData({
+                firstName: '', lastName: '', email: '', phone: '',
+                province: '', district: '', neighborhood: '',
+                street: '', buildingNo: '', apartmentNo: '',
+                postalCode: '', fullAddress: ''
+            });
         }
         setShowAddModal(true);
     };
@@ -100,13 +239,28 @@ export default function Dashboard() {
             return;
         }
 
+        const payload = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            email: formData.email,
+            province: formData.province,
+            district: formData.district,
+            neighborhood: formData.neighborhood,
+            street: formData.street,
+            buildingNo: formData.buildingNo,
+            apartmentNo: formData.apartmentNo,
+            postalCode: formData.postalCode,
+            fullAddress: formData.fullAddress
+        };
+
         try {
             setSaving(true);
             if (editingPerson) {
-                await api.persons.update(editingPerson._id, formData);
+                await api.persons.update(editingPerson._id, payload);
                 toast.success('Kişi güncellendi');
             } else {
-                await api.persons.create(formData);
+                await api.persons.create(payload);
                 toast.success('Kişi eklendi');
             }
             setShowAddModal(false);
@@ -125,14 +279,30 @@ export default function Dashboard() {
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">Kişiler {totalCount > 0 && <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>({totalCount})</span>}</h2>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap" style={{ alignItems: 'center' }}>
                             <input
                                 type="text"
                                 className="form-input"
                                 placeholder="Ara..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                style={{ width: '200px' }}
+                                style={{ width: '150px' }}
+                            />
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="Btn Name"
+                                value={btnName}
+                                onChange={(e) => setBtnName(e.target.value)}
+                                style={{ width: '100px' }}
+                            />
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="Btn Link"
+                                value={btnLink}
+                                onChange={(e) => setBtnLink(e.target.value)}
+                                style={{ width: '120px' }}
                             />
                             <button className="btn btn-secondary" onClick={exportToExcel}>
                                 📊 Excel
@@ -182,7 +352,7 @@ export default function Dashboard() {
                                                 <td><strong>{person.firstName} {person.lastName}</strong></td>
                                                 <td>{person.email || '-'}</td>
                                                 <td>{person.phone || '-'}</td>
-                                                <td>{person.address?.province ? `${person.address.province}/${person.address.district || ''}` : '-'}</td>
+                                                <td>{person.province ? `${person.province}/${person.district || ''}` : '-'}</td>
                                                 <td>
                                                     <div className="flex gap-2">
                                                         <button
@@ -213,24 +383,56 @@ export default function Dashboard() {
                                     </tbody>
                                 </table>
                             </div>
+                            {/* Pagination */}
+                            {persons.length > 0 && (
+                                <div className="flex justify-between items-center mt-4" style={{ padding: '0.5rem 0', borderTop: '1px solid #eee' }}>
+                                    {/* Sol: Limit seçici */}
+                                    <div className="flex gap-2 items-center">
+                                        <span style={{ fontSize: '0.9rem', color: '#666' }}>Sayfa başına:</span>
+                                        <select
+                                            className="form-input"
+                                            value={limit}
+                                            onChange={(e) => {
+                                                const val = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                                                setLimit(val);
+                                                setPage(1);
+                                            }}
+                                            style={{ width: 'auto', padding: '0.4rem 0.6rem' }}
+                                        >
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                            <option value={500}>500</option>
+                                            <option value={1000}>1000</option>
+                                            <option value="all">Tümü</option>
+                                        </select>
+                                    </div>
 
-                            {totalPages > 1 && (
-                                <div className="flex justify-between items-center mt-4">
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                    >
-                                        Önceki
-                                    </button>
-                                    <span>Sayfa {page} / {totalPages}</span>
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={page === totalPages}
-                                    >
-                                        Sonraki
-                                    </button>
+                                    {/* Orta: Sayfa geçişleri */}
+                                    {totalPages > 1 && (
+                                        <div className="flex gap-2 items-center">
+                                            <button
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                disabled={page === 1}
+                                            >
+                                                Önceki
+                                            </button>
+                                            <span style={{ fontSize: '0.9rem' }}>Sayfa {page} / {totalPages}</span>
+                                            <button
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={page === totalPages}
+                                            >
+                                                Sonraki
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Sağ: Toplam kayıt */}
+                                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                                        Toplam: {totalCount} kayıt
+                                    </span>
                                 </div>
                             )}
                         </>
@@ -257,27 +459,27 @@ export default function Dashboard() {
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">İl</span>
-                                    <span>{selectedPerson.address?.province || '-'}</span>
+                                    <span>{selectedPerson.province || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">İlçe</span>
-                                    <span>{selectedPerson.address?.district || '-'}</span>
+                                    <span>{selectedPerson.district || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">Mahalle</span>
-                                    <span>{selectedPerson.address?.neighborhood || '-'}</span>
+                                    <span>{selectedPerson.neighborhood || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">Sokak</span>
-                                    <span>{selectedPerson.address?.street || '-'}</span>
+                                    <span>{selectedPerson.street || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">Bina/Daire</span>
-                                    <span>{selectedPerson.address?.buildingNo || '-'} / {selectedPerson.address?.apartmentNo || '-'}</span>
+                                    <span>{selectedPerson.buildingNo || '-'} / {selectedPerson.apartmentNo || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">Tam Adres</span>
-                                    <span>{selectedPerson.address?.fullAddress || '-'}</span>
+                                    <span>{selectedPerson.fullAddress || '-'}</span>
                                 </div>
                                 <div className="data-item">
                                     <span className="data-item-label">Ref Kodu</span>
@@ -345,6 +547,102 @@ export default function Dashboard() {
                                         />
                                     </div>
                                 </div>
+
+                                <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', fontSize: '0.95rem', color: '#666' }}>Adres Bilgileri</h4>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">İl</label>
+                                        <select
+                                            className="form-input"
+                                            value={selectedProvince?.id || ''}
+                                            onChange={handleProvinceChange}
+                                        >
+                                            <option value="">İl Seçin</option>
+                                            {provinces.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">İlçe</label>
+                                        <select
+                                            className="form-input"
+                                            value={selectedDistrict?.id || ''}
+                                            onChange={handleDistrictChange}
+                                            disabled={!selectedProvince}
+                                        >
+                                            <option value="">İlçe Seçin</option>
+                                            {districts.map(d => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Mahalle</label>
+                                        <select
+                                            className="form-input"
+                                            value={neighborhoods.find(n => n.name === formData.neighborhood)?.id || ''}
+                                            onChange={handleNeighborhoodChange}
+                                            disabled={!selectedDistrict}
+                                        >
+                                            <option value="">Mahalle Seçin</option>
+                                            {neighborhoods.map(n => (
+                                                <option key={n.id} value={n.id}>{n.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Sokak</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.street}
+                                            onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ maxWidth: '100px' }}>
+                                        <label className="form-label">Bina No</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.buildingNo}
+                                            onChange={(e) => setFormData({ ...formData, buildingNo: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ maxWidth: '100px' }}>
+                                        <label className="form-label">Daire No</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.apartmentNo}
+                                            onChange={(e) => setFormData({ ...formData, apartmentNo: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ maxWidth: '120px' }}>
+                                        <label className="form-label">Posta Kodu</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.postalCode}
+                                            onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Tam Adres</label>
+                                    <textarea
+                                        className="form-input"
+                                        rows="2"
+                                        value={formData.fullAddress}
+                                        onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
+                                    />
+                                </div>
+
                                 <div className="modal-actions">
                                     <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
                                         İptal

@@ -69,9 +69,15 @@ const api = {
                 body: formData
             });
         },
-        exportExcel: async () => {
+        exportExcel: async (params = {}) => {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/persons/export/excel`, {
+            const queryParams = new URLSearchParams();
+            if (params.hostname) queryParams.append('hostname', params.hostname);
+            if (params.btnName) queryParams.append('btnName', params.btnName);
+            if (params.btnLink) queryParams.append('btnLink', params.btnLink);
+
+            const queryString = queryParams.toString();
+            const response = await fetch(`${API_BASE_URL}/persons/export/excel${queryString ? '?' + queryString : ''}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error('Export başarısız');
@@ -105,6 +111,14 @@ const api = {
         getStreets: (provinceId, districtId, neighborhoodId) =>
             fetchAPI(`/address/streets/${provinceId}/${districtId}/${neighborhoodId}`),
         sync: () => fetchAPI('/address/sync', { method: 'POST' })
+    },
+
+    addressManagement: {
+        add: (data) => fetchAPI('/address-management/add', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        delete: (id) => fetchAPI(`/address-management/${id}`, { method: 'DELETE' })
     }
 };
 
